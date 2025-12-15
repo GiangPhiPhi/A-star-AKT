@@ -9,7 +9,7 @@ def print_state(state):
     print()
 
 
-# chuyen doi trang thai
+# chuyen doi trang thai sang tuple
 def state_to_tuple(state):
     return tuple(x for row in state for x in row)
 
@@ -17,7 +17,7 @@ def state_to_tuple(state):
 def tuple_to_state(tup, n):
     state = []
     for i in range(n):
-        state.append(list(tup[i*n:(i+1)*n]))
+        state.append(list(tup[i*n:(i+1)*n])) #sinh trạng thái 0x1 -> nxn
     return state
 
 
@@ -30,7 +30,7 @@ def find_zero(state):
                 return i, j
 
 
-# heuristic manhattan
+# heuristic manhattan |x-x'|+|y-y'|
 def manhattan(state, goal):
     n = len(state)
     pos_goal = {}
@@ -38,7 +38,7 @@ def manhattan(state, goal):
         for j in range(n):
             pos_goal[goal[i][j]] = (i, j)
 
-    h = 0
+    h = 0 #tong kcach manhattan cac o
     for i in range(n):
         for j in range(n):
             val = state[i][j]
@@ -68,10 +68,11 @@ def get_successors(state):
 # truy vet duong di
 def reconstruct_path(came_from, current, n):
     path = []
+    #current= goal->start
     while current is not None:
         path.append(current)
         current = came_from.get(current)
-    path.reverse()
+    path.reverse() #dao nguoc
 
     print("so buoc di:", len(path) - 1)
     for i, st in enumerate(path):
@@ -89,17 +90,17 @@ def greedy_best_first(start, goal):
     goal_t = state_to_tuple(goal)
 
     open_list = []
-    closed = set()
+    closed = set() #tap hop ds da duyet, tranh lap 8
     came_from = {start_t: None}
 
     h0 = manhattan(start, goal)
-    open_list.append((h0, start_t, 0))
+    open_list.append((h0, start_t, 0)) #co duoc h,state,g
 
     step = 0
-
+    #den khi tim dc goal
     while open_list:
-        open_list.sort(key=lambda x: x[0])
-        h, current, g = open_list.pop(0)
+        open_list.sort(key=lambda x: x[0]) #sap xep h>
+        h, current, g = open_list.pop(0) #lay gan goal nhat
 
         step += 1
         print("buoc ", step, "g =", g, "h =", h, "f =", h)
@@ -108,17 +109,17 @@ def greedy_best_first(start, goal):
             reconstruct_path(came_from, current, n)
             return g, step
 
-        closed.add(current)
+        closed.add(current) #danh dau da duyet
         current_state = tuple_to_state(current, n)
-
+        #moi buoc di chuyen o emty->new state
         for nxt in get_successors(current_state):
             nxt_t = state_to_tuple(nxt)
-            if nxt_t in closed:
+            if nxt_t in closed: #neu da duyet
                 continue
             if nxt_t not in came_from:
-                came_from[nxt_t] = current
+                came_from[nxt_t] = current #luu cha
                 h_n = manhattan(nxt, goal)
-                open_list.append((h_n, nxt_t, g + 1))
+                open_list.append((h_n, nxt_t, g + 1)) #cho vao openlist
 
     return None, step
 
@@ -127,12 +128,12 @@ def greedy_best_first(start, goal):
 def astar(start, goal):
     n = len(start)
     start_t = state_to_tuple(start)
-    goal_t = state_to_tuple(goal)
+    goal_t = state_to_tuple(goal) #chi phi best
 
     open_list = []
-    closed = set()
+    closed = set() #danh dau
     g_score = {start_t: 0}
-    came_from = {start_t: None}
+    came_from = {start_t: None} #truy vet duong di
 
     h0 = manhattan(start, goal)
     open_list.append((h0, start_t))
@@ -140,6 +141,7 @@ def astar(start, goal):
     step = 0
 
     while open_list:
+        #chọn node co f min
         open_list.sort(key=lambda x: x[0])
         f, current = open_list.pop(0)
         g = g_score[current]
@@ -152,10 +154,10 @@ def astar(start, goal):
             reconstruct_path(came_from, current, n)
             return g, step
 
-        closed.add(current)
+        closed.add(current)#da duyet
         current_state = tuple_to_state(current, n)
 
-        for nxt in get_successors(current_state):
+        for nxt in get_successors(current_state):#duyet tiep
             nxt_t = state_to_tuple(nxt)
             new_g = g + 1
 
@@ -177,7 +179,7 @@ def input_puzzle():
     n = int(input("nhap n: "))
     size = n * n
 
-    print("nhap trang thai ban dau (0 la o trong):")
+    print("nhap trang thai ban dau (vd: 2 8 3 1 6 4 7 0 5):")
     flat = list(map(int, input().split()))
     start = [flat[i*n:(i+1)*n] for i in range(n)]
 
@@ -203,3 +205,4 @@ if __name__ == "__main__":
     print("so sanh")
     print("greedy: so buoc =", g_cost, "so lan mo rong =", g_steps)
     print("a*: so buoc =", a_cost, "so lan mo rong =", a_steps)
+
